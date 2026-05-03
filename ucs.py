@@ -35,8 +35,8 @@ if __name__ == "__main__":
         'h': {}
     }
 
-    source = input("Enter source node: ").strip()
-    destination = input("Enter destination node: ").strip()
+    source = input("Enter source node: ").strip().lower()
+    destination = input("Enter destination node: ").strip().lower()
 
     path, cost = ucs_path_with_cost(graph, source, destination)
 

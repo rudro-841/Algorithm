@@ -1,7 +1,6 @@
 import heapq
 
 def ucs_path_with_cost(graph, start, end):
-    # Priority queue: (cost, node, path)
     queue = [(0, start, [start])]
     visited = set()
 
@@ -15,16 +14,13 @@ def ucs_path_with_cost(graph, start, end):
             visited.add(node)
             for neighbor, edge_cost in graph[node].items():
                 if neighbor not in visited:
-                    new_cost = cost + edge_cost
-                    new_path = path + [neighbor]
-                    heapq.heappush(queue, (new_cost, neighbor, new_path))
+                    heapq.heappush(queue, (cost + edge_cost, neighbor, path + [neighbor]))
 
     return None, float("inf")
 
 
 def greedy_best_first_search(graph, start, end, heuristic):
-    # Priority queue: (heuristic_cost, node, path, actual_cost)
-    queue = [(heuristic(start, end), start, [start], 0)]
+    queue = [(heuristic(start), start, [start], 0)]
     visited = set()
 
     while queue:
@@ -37,12 +33,19 @@ def greedy_best_first_search(graph, start, end, heuristic):
             visited.add(node)
             for neighbor, edge_cost in graph[node].items():
                 if neighbor not in visited:
-                    new_actual_cost = actual_cost + edge_cost
-                    new_h_cost = heuristic(neighbor, end)
-                    new_path = path + [neighbor]
-                    heapq.heappush(queue, (new_h_cost, neighbor, new_path, new_actual_cost))
+                    heapq.heappush(queue, (heuristic(neighbor), neighbor,
+                                           path + [neighbor], actual_cost + edge_cost))
 
     return None, float("inf")
+
+
+def print_result(label, source, destination, path, cost):
+    print(f"\n--- {label} ---")
+    if path:
+        print(f"Path from {source} to {destination}: {' -> '.join(path)}")
+        print(f"Total cost: {cost}")
+    else:
+        print(f"No path found from {source} to {destination}")
 
 
 if __name__ == "__main__":
@@ -58,30 +61,18 @@ if __name__ == "__main__":
         'h': {}
     }
 
-    # Define a simple heuristic (Manhattan distance-like estimate)
     heuristic_values = {
         's': 10, 'a': 8, 'b': 7, 'c': 6,
-        'd': 5, 'e': 4, 'f': 3, 'g': 0, 'h': 2
+        'd': 5,  'e': 4, 'f': 3, 'g': 0, 'h': 2
     }
 
-    def heuristic(node, goal):
-        return heuristic_values.get(node, 0)
+    heuristic = lambda node: heuristic_values.get(node, 0)  # goal removed — wasn't used
 
     source = input("Enter source node: ").strip()
     destination = input("Enter destination node: ").strip()
 
-    print("\n--- UCS (Uniform Cost Search) ---")
-    path_ucs, cost_ucs = ucs_path_with_cost(graph, source, destination)
-    if path_ucs:
-        print(f"Path from {source} to {destination}: {' -> '.join(path_ucs)}")
-        print(f"Total cost: {cost_ucs}")
-    else:
-        print(f"No path found from {source} to {destination}")
+    print_result("UCS", source, destination,
+                 *ucs_path_with_cost(graph, source, destination))
 
-    print("\n--- GBFS (Greedy Best First Search) ---")
-    path_gbfs, cost_gbfs = greedy_best_first_search(graph, source, destination, heuristic)
-    if path_gbfs:
-        print(f"Path from {source} to {destination}: {' -> '.join(path_gbfs)}")
-        print(f"Total cost: {cost_gbfs}")
-    else:
-        print(f"No path found from {source} to {destination}")
+    print_result("GBFS", source, destination,
+                 *greedy_best_first_search(graph, source, destination, heuristic))
